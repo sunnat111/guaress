@@ -5,20 +5,23 @@ import { useRef, useState } from "react";
 import { categories, colours, type Product } from "@/data/products";
 import { site, telHref } from "@/data/site";
 import { formatPrice, photo } from "@/lib/asset";
-import { BookmarkIcon, MinusIcon, PhoneIcon, PlusIcon } from "./Icons";
+import { BookmarkIcon, ClockIcon, MinusIcon, PhoneIcon, PinIcon, PlusIcon } from "./Icons";
+import { SailMark } from "./Logo";
 import { useSite } from "./Providers";
 
 function Accordion({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-line">
-      <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="caps flex h-[54px] w-full items-center justify-between text-[11px]">
+    <div className="border-b border-hair">
+      <button onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex h-[60px] w-full items-center justify-between text-[14px] font-semibold">
         {title}
-        {open ? <MinusIcon width={16} height={16} /> : <PlusIcon width={16} height={16} />}
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pearl">
+          {open ? <MinusIcon width={14} height={14} /> : <PlusIcon width={14} height={14} />}
+        </span>
       </button>
       <div className={`acc-body ${open ? "is-open" : ""}`}>
         <div>
-          <div className="pb-5 text-[14px] font-light leading-relaxed text-muted">{children}</div>
+          <div className="pb-6 text-[14px] leading-relaxed text-slate">{children}</div>
         </div>
       </div>
     </div>
@@ -33,47 +36,57 @@ export function ProductView({ p }: { p: Product }) {
   const cat = categories.find((c) => c.slug === p.category)!;
   const fav = isFavorite(p.slug);
 
-  const onScroll = () => {
-    const el = track.current;
-    if (!el) return;
-    setSlide(Math.round(el.scrollLeft / el.clientWidth));
-  };
-
   return (
-    <div className="md:grid md:grid-cols-[1.15fr_1fr]">
-      {/* gallery: swipe on mobile, stacked on desktop */}
-      <div className="relative">
-        <div ref={track} onScroll={onScroll} className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto md:block md:overflow-visible">
+    <div className="wrap wrap-max grid gap-10 pt-6 md:grid-cols-12 md:gap-12 md:pt-10">
+      {/* gallery */}
+      <div className="md:col-span-7">
+        {/* mobile: swipe */}
+        <div className="relative -mx-[var(--gutter)] md:hidden">
+          <div
+            ref={track}
+            onScroll={() => track.current && setSlide(Math.round(track.current.scrollLeft / track.current.clientWidth))}
+            className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto"
+          >
+            {p.photos.map((name, i) => {
+              const ph = photo(name);
+              return (
+                <div key={name + i} className="media aspect-[3/4] w-full shrink-0 snap-start">
+                  <img src={ph.src} srcSet={ph.srcSet} sizes="100vw" alt={i === 0 ? p.name[lang] : ""} loading={i === 0 ? "eager" : "lazy"} />
+                </div>
+              );
+            })}
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center gap-1.5">
+            {p.photos.map((_, i) => (
+              <span key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === slide ? "w-5 bg-white" : "w-1.5 bg-white/55"}`} />
+            ))}
+          </div>
+        </div>
+        {/* desktop: editorial grid */}
+        <div className="hidden grid-cols-2 gap-3 md:grid">
           {p.photos.map((name, i) => {
             const ph = photo(name);
+            const wide = i === 0 || (p.photos.length % 2 === 0 && i === p.photos.length - 1);
             return (
-              <div key={name + i} className="photo-box aspect-[3/4] w-full shrink-0 snap-start md:mb-px">
+              <div key={name + i} className={`media lift ${wide ? "col-span-2 aspect-[4/5]" : "aspect-[3/4]"}`}>
                 <img
                   src={ph.src}
                   srcSet={ph.srcSet}
-                  sizes="(min-width: 768px) 55vw, 100vw"
+                  sizes={wide ? "55vw" : "28vw"}
                   alt={i === 0 ? p.name[lang] : ""}
                   loading={i === 0 ? "eager" : "lazy"}
                   fetchPriority={i === 0 ? "high" : undefined}
-                  decoding="async"
                 />
               </div>
             );
           })}
         </div>
-        {p.photos.length > 1 && (
-          <div className="pointer-events-none absolute inset-x-4 bottom-4 flex gap-1 md:hidden">
-            {p.photos.map((_, i) => (
-              <span key={i} className={`h-[2px] flex-1 ${i === slide ? "bg-white" : "bg-white/40"}`} />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* info */}
-      <div className="container-x md:px-12 lg:px-16 xl:px-24">
-        <div className="py-8 md:sticky md:py-14" style={{ top: "var(--top-offset)" }}>
-          <nav className="label flex gap-2 text-faint" aria-label="breadcrumb">
+      <div className="md:col-span-5">
+        <div className="md:sticky md:pb-16" style={{ top: "calc(var(--top-offset) + 32px)" }}>
+          <nav className="flex gap-2 text-[12px] font-medium text-mist" aria-label="breadcrumb">
             <Link href={`/${lang}/katalog/`} className="hover:text-ink">
               {t.catalog.title}
             </Link>
@@ -82,59 +95,77 @@ export function ProductView({ p }: { p: Product }) {
               {cat.name[lang]}
             </Link>
           </nav>
-          <p className="label mt-8 text-muted">{t.hero.season}</p>
-          <h1 className="display mt-3 text-[28px] md:text-[38px]">{p.name[lang]}</h1>
-          <p className="mt-5 text-[20px] font-light">
-            {p.price != null ? `${formatPrice(p.price)} ${t.currency}` : t.product.priceOnRequest}
-          </p>
-          <p className="mt-1 text-[12px] font-light text-navy">{t.product.priceNote}</p>
+          <p className="eyebrow mt-8">{t.hero.season}</p>
+          <h1 className="h-title mt-4 text-[38px] md:text-[50px]">{p.name[lang]}</h1>
+          <div className="mt-6 flex items-end gap-4">
+            <p className="price text-[30px] leading-none">
+              {p.price != null ? (
+                <>
+                  {formatPrice(p.price)} <span className="text-[18px] opacity-60">{t.currency}</span>
+                </>
+              ) : (
+                <span className="font-sans text-[16px] font-medium text-slate">{t.product.priceOnRequest}</span>
+              )}
+            </p>
+          </div>
+          <p className="mt-2 text-[12.5px] font-medium text-gold">{t.product.priceNote}</p>
 
-          <p className="lead mt-6 max-w-[520px] text-[14px]">{p.description[lang]}</p>
+          <p className="text-body mt-7 text-[15px]">{p.description[lang]}</p>
 
-          <p className="mt-6 flex items-center gap-2 text-[13px] font-light">
-            <span className="text-muted">{t.product.colour}:</span>
-            <span className="h-3 w-3 rounded-full ring-1 ring-black/10" style={{ background: colours[p.colour].hex }} />
-            {colours[p.colour].name[lang]}
-          </p>
+          <div className="mt-8 flex items-center gap-3 text-[13.5px]">
+            <span className="h-5 w-5 rounded-full ring-1 ring-black/10 ring-offset-2 ring-offset-ivory" style={{ background: colours[p.colour].hex }} />
+            <span className="text-slate">{t.product.colour}:</span>
+            <span className="font-medium">{colours[p.colour].name[lang]}</span>
+          </div>
 
-          <fieldset className="mt-6">
-            <legend className="label mb-3">{t.product.size}</legend>
+          <fieldset className="mt-8">
+            <legend className="eyebrow plain mb-4">{t.product.size}</legend>
             <div className="flex flex-wrap gap-2">
               {p.sizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSize(size === s ? "" : s)}
-                  aria-pressed={size === s}
-                  className={`h-11 min-w-12 border px-3 text-[13px] transition-colors ${size === s ? "border-ink bg-ink text-white" : "border-line hover:border-ink"}`}
-                >
+                <button key={s} onClick={() => setSize(size === s ? "" : s)} aria-pressed={size === s} className="chip h-11 min-w-[52px] justify-center">
                   {s}
                 </button>
               ))}
             </div>
           </fieldset>
 
-          <div className="mt-6 flex gap-2">
-            <button onClick={() => openReserve({ product: p.slug, size })} className="btn btn-dark flex-1">
+          <div className="mt-8 flex gap-2">
+            <button onClick={() => openReserve({ product: p.slug, size })} className="pill pill-navy h-14 flex-1">
               {t.product.reserve}
             </button>
             <button
               onClick={() => toggleFavorite(p.slug)}
               aria-pressed={fav}
               aria-label={fav ? t.product.saved : t.product.save}
-              className="btn btn-line w-[52px] px-0"
+              className={`pill h-14 w-14 px-0 ${fav ? "pill-ink" : "pill-line"}`}
             >
               <BookmarkIcon width={18} height={18} filled={fav} />
             </button>
           </div>
-          <a href={telHref(site.phones[0])} className="btn btn-line mt-2 w-full">
+          <a href={telHref(site.phones[0])} className="pill pill-line mt-2 h-14 w-full">
             <PhoneIcon width={16} height={16} /> {t.product.call}
           </a>
 
-          <div className="mt-8 border-t border-line">
+          <ul className="mt-8 grid gap-3 rounded-2xl bg-pearl p-5 text-[13px]">
+            <li className="flex items-center gap-3">
+              <SailMark className="h-4 text-navy" /> {t.home.stylistTitle}
+            </li>
+            <li className="flex items-center gap-3">
+              <PinIcon width={16} height={16} className="text-navy" /> Gulzor · Atlas · High Town Mall
+            </li>
+            <li className="flex items-center gap-3">
+              <ClockIcon width={16} height={16} className="text-navy" /> {t.stores.daily} {site.hours}
+            </li>
+          </ul>
+
+          <div className="mt-6 border-t border-hair">
             <Accordion title={t.product.details} defaultOpen>
-              <ul className="list-inside list-disc space-y-1">
+              <ul className="space-y-1.5">
                 {p.details.map((d, i) => (
-                  <li key={i}>{d[lang]}</li>
+                  <li key={i} className="flex gap-3">
+                    <span className="mt-[9px] h-1 w-1 shrink-0 rounded-full bg-gold" />
+                    {d[lang]}
+                  </li>
                 ))}
               </ul>
             </Accordion>

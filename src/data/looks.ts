@@ -17,12 +17,15 @@ export type Look = {
   photos: string[];
   film?: string;
   items: LookItem[];
+  /** Full-length photo with tappable markers: item = index in items, x/y in % of the photo. */
+  spot: { photo: string; points: { item: number; x: number; y: number }[] };
 };
 
 export const looks: Look[] = [
   {
     slug: "01",
     num: "01",
+    spot: { photo: "p2499", points: [{ item: 0, x: 40, y: 46 }, { item: 1, x: 62, y: 63 }, { item: 2, x: 58, y: 86 }] },
     title: { uz: "Bordo va grafit", ru: "Бордо и графит" },
     text: {
       uz: "Chuqur va vazmin bordo tus to‘q kulrang, qora va neytral ranglar bilan ayniqsa chiroyli ochiladi. Asosiy urg‘u — poloda.",
@@ -38,6 +41,7 @@ export const looks: Look[] = [
   {
     slug: "02",
     num: "02",
+    spot: { photo: "p2504", points: [{ item: 0, x: 63, y: 55 }, { item: 1, x: 52, y: 36 }] },
     title: { uz: "Moviy vazminlik", ru: "Сдержанный синий" },
     text: {
       uz: "To‘q rangdagi dvoyka, oq sviter va obrazni yakunlaydigan oyoq kiyim — kundalik uchrashuvlar va muhim rejalar uchun vazmin tanlov.",
@@ -53,6 +57,7 @@ export const looks: Look[] = [
   {
     slug: "03",
     num: "03",
+    spot: { photo: "p2509", points: [{ item: 0, x: 52, y: 36 }, { item: 1, x: 56, y: 64 }, { item: 2, x: 57, y: 87 }] },
     title: { uz: "Kuz ranglari", ru: "Осенние оттенки" },
     text: {
       uz: "Jigarrang polo va kulrang shim — kundalik uchrashuvdan ish kunigacha mos kombinatsiya. Klassik oyoq kiyim bilan jiddiy va ishonchli ko‘rinish.",
@@ -64,6 +69,7 @@ export const looks: Look[] = [
   {
     slug: "04",
     num: "04",
+    spot: { photo: "p2518", points: [{ item: 0, x: 33, y: 58 }, { item: 1, x: 53, y: 48 }] },
     title: { uz: "Kulrang klassika", ru: "Серая классика" },
     text: {
       uz: "Och kulrang kostyum qora trikotaj bilan — rasmiy va erkin uchrashuvlar uchun universal, ham vazmin, ham bejirim obraz.",
@@ -75,6 +81,7 @@ export const looks: Look[] = [
   {
     slug: "05",
     num: "05",
+    spot: { photo: "p2523", points: [{ item: 0, x: 44, y: 33 }, { item: 2, x: 44, y: 66 }, { item: 3, x: 45, y: 88 }] },
     title: { uz: "Qora va oq", ru: "Чёрное и белое" },
     text: {
       uz: "Qora kardigan, oq futbolka va qora shim — har qanday vaziyatda jiddiy va o‘ziga ishongan ko‘rinish. Qulay poyabzal lookni to‘ldiradi.",
@@ -91,6 +98,7 @@ export const looks: Look[] = [
   {
     slug: "06",
     num: "06",
+    spot: { photo: "p2530", points: [{ item: 0, x: 58, y: 40 }, { item: 1, x: 51, y: 22 }, { item: 2, x: 55, y: 90 }] },
     title: { uz: "Monoxrom", ru: "Монохром" },
     text: {
       uz: "Yumshoq matodan jigarrang sport-casual to‘plam, oq futbolka va mos rangdagi charm krossovka — kundalik qulaylik va bejirim did.",
@@ -102,6 +110,7 @@ export const looks: Look[] = [
   {
     slug: "07",
     num: "07",
+    spot: { photo: "p2538", points: [{ item: 0, x: 52, y: 42 }, { item: 1, x: 56, y: 31 }, { item: 2, x: 60, y: 94 }] },
     title: { uz: "Sport-casual", ru: "Sport-casual" },
     text: {
       uz: "Erkinlik va nafislikni o‘zida jamlagan sport-casual obraz — kundalik hayot uchun qulay.",
@@ -117,6 +126,7 @@ export const looks: Look[] = [
   {
     slug: "08",
     num: "08",
+    spot: { photo: "p2544", points: [{ item: 0, x: 69, y: 48 }, { item: 1, x: 57, y: 40 }, { item: 2, x: 53, y: 94 }] },
     title: { uz: "To‘q tus va kulrang", ru: "Тёмный и серый" },
     text: {
       uz: "To‘q tusdagi qulay to‘plam va och kulrang bazaviy sviter — ishbilarmonlik muhitida ham, dam olishda ham erkin va ishonchli.",
@@ -132,6 +142,7 @@ export const looks: Look[] = [
   {
     slug: "09",
     num: "09",
+    spot: { photo: "v6893-bench", points: [{ item: 0, x: 62, y: 58 }, { item: 1, x: 59, y: 47 }] },
     title: { uz: "Bog‘da sayr", ru: "Прогулка в парке" },
     text: {
       uz: "Och rangli jundan yengil kurtka, quyuq shokolad tusidagi sviter va to‘g‘ri bichimli shim — shahar bo‘ylab sayr va erkin uchrashuvlar uchun.",

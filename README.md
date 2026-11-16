@@ -66,6 +66,11 @@ src/brand/             logo SVGs
 scripts/               build-media.py, postbuild.mjs (404 page)
 ```
 
-Design follows the "quiet luxury" system from the reference teardown (paper / ink / one accent, Jost in
-wide-tracked capitals, square buttons, 1.3-stroke icons, slow motion), recoloured with the Guaress navy
-and beige taken from the logo.
+## Design
+
+"Sail & Sea" — the Guaress visual system, built from the logo:
+
+- Light ivory canvas (`#fbf9f5`), deep navy from the logo ring (`#0e2f66`), a champagne accent (`#b0956a`).
+- Cormorant Garamond (display, with navy italic accent words) + Manrope (text). Both cover Cyrillic.
+- Pill buttons, arched photo frames, wave lines from the logo, numbered serif-italic details.
+- Signature feature: outfit photos with tappable markers on each garment (`LookShowcase`).

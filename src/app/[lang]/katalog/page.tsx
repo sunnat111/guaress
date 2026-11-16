@@ -12,11 +12,9 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Loc
 export default function CatalogPage() {
   return (
     <div className="pt-top">
-      <div className="pt-8 md:pt-12">
-        <Suspense fallback={<div className="min-h-[70vh]" />}>
-          <CatalogView />
-        </Suspense>
-      </div>
+      <Suspense fallback={<div className="min-h-[80vh]" />}>
+        <CatalogView />
+      </Suspense>
     </div>
   );
 }

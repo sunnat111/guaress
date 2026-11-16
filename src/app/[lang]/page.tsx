@@ -1,38 +1,52 @@
 import Link from "next/link";
+import { CategoryIndex } from "@/components/CategoryIndex";
 import { Hero } from "@/components/Hero";
-import { ArrowRight, ClockIcon, PhoneIcon, PinIcon } from "@/components/Icons";
+import { ClockIcon, PinIcon } from "@/components/Icons";
 import { InViewVideo } from "@/components/InViewVideo";
 import { LookCard } from "@/components/LookCard";
-import { SailMark } from "@/components/Logo";
+import { LookShowcase } from "@/components/LookShowcase";
+import { Emblem, Wave } from "@/components/Logo";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductRail } from "@/components/ProductRail";
+import { ReserveButton } from "@/components/ReserveButton";
 import { Reveal } from "@/components/Reveal";
+import { Rich } from "@/components/Rich";
 import { looks } from "@/data/looks";
-import { categories, countIn, getProduct, products } from "@/data/products";
-import { site, stores, telHref } from "@/data/site";
+import { products } from "@/data/products";
+import { site, stores } from "@/data/site";
 import type { Locale } from "@/i18n/config";
 import { getDict } from "@/i18n";
 import { photo } from "@/lib/asset";
 
-function Img({ name, alt = "", sizes, className = "" }: { name: string; alt?: string; sizes: string; className?: string }) {
-  const p = photo(name);
-  return <img src={p.small} srcSet={p.srcSet} sizes={sizes} alt={alt} loading="lazy" decoding="async" className={className} />;
-}
-
-function SectionHead({ label, title, href, link }: { label: string; title: string; href?: string; link?: string }) {
+function Head({
+  eyebrow,
+  title,
+  text,
+  href,
+  link,
+  tone = "light",
+}: {
+  eyebrow: string;
+  title: string;
+  text?: string;
+  href?: string;
+  link?: string;
+  tone?: "light" | "dark";
+}) {
   return (
-    <div className="container-x">
-      <div className="flex items-end justify-between gap-6 border-t border-ink pt-6 md:pt-8">
-        <div>
-          <p className="label mb-3 text-muted md:mb-4">{label}</p>
-          <h2 className="display text-[32px] md:text-[52px]">{title}</h2>
-        </div>
-        {href && (
-          <Link href={href} className="caps link-line mb-2 shrink-0 text-[11px] md:text-[12px]">
-            {link}
-          </Link>
-        )}
-      </div>
+    <div className="wrap wrap-max flex flex-col justify-between gap-6 md:flex-row md:items-end">
+      <Reveal>
+        <p className="eyebrow">{eyebrow}</p>
+        <h2 className={`h-title mt-5 max-w-[760px] text-[42px] md:text-[64px] ${tone === "dark" ? "text-white [&_em]:text-gold" : ""}`}>
+          <Rich text={title} />
+        </h2>
+        {text && <p className={`text-body mt-5 max-w-[520px] ${tone === "dark" ? "text-white/65" : ""}`}>{text}</p>}
+      </Reveal>
+      {href && (
+        <Link href={href} className={`link-arrow shrink-0 md:mb-3 ${tone === "dark" ? "text-white" : ""}`}>
+          {link} <span className="arrow-line" />
+        </Link>
+      )}
     </div>
   );
 }
@@ -42,170 +56,139 @@ export default async function Home({ params }: { params: Promise<{ lang: Locale 
   const t = getDict(lang);
   const fresh = products.filter((p) => p.isNew).slice(0, 8);
   const outerwear = products.filter((p) => p.category === "ustki-kiyim");
-  const detailPair = [getProduct("polo-burgundy")!, getProduct("polo-chocolate")!];
+  const editorial = ["01", "03", "04", "05", "06", "08"].map((s) => looks.find((l) => l.slug === s)!);
+  const stylistPhoto = photo("p2513");
 
   return (
     <>
-      <Hero />
+      <Hero lang={lang} />
 
-      {/* manifesto */}
-      <section className="container-x py-20 text-center md:py-32">
+      {/* statement */}
+      <section className="wrap wrap-max py-24 text-center md:py-36">
         <Reveal>
-          <SailMark className="mx-auto h-[34px] text-navy" />
-          <h2 className="display mx-auto mt-7 max-w-[900px] text-[28px] md:text-[46px]">{t.manifesto.title}</h2>
-          <p className="lead mx-auto mt-6 max-w-[560px]">{t.manifesto.text}</p>
+          <Emblem className="mx-auto h-12 text-navy" />
+          <p className="h-title mx-auto mt-10 max-w-[1000px] text-[34px] md:text-[56px]">
+            <Rich text={t.lux.statement} />
+          </p>
+          <p className="mt-8 text-[11px] font-bold uppercase tracking-[0.3em] text-mist">— {t.lux.statementBy}</p>
         </Reveal>
+        <Wave className="mx-auto mt-16 h-8 w-full max-w-[520px] text-gold/70" />
       </section>
 
-      {/* categories */}
-      <section aria-label={t.home.categories}>
-        <div className="no-scrollbar container-x flex snap-x scroll-px-[var(--gutter)] gap-3 overflow-x-auto md:grid md:grid-cols-6 md:gap-4">
-          {categories.map((c, i) => (
-            <Reveal key={c.slug} delay={i * 0.06} className="w-[42vw] shrink-0 snap-start md:w-auto">
-              <Link href={`/${lang}/katalog/?c=${c.slug}`} className="group block">
-                <div className="photo-box zoom aspect-[3/4]">
-                  <Img name={c.cover} alt={c.name[lang]} sizes="(min-width: 768px) 16vw, 42vw" />
-                </div>
-                <div className="mt-3 flex items-baseline justify-between gap-2">
-                  <span className="caps text-[11px] md:text-[12px]">{c.name[lang]}</span>
-                  <span className="text-[11px] font-light text-faint">
-                    0{i + 1} · {countIn(c.slug)}
-                  </span>
-                </div>
-              </Link>
+      {/* featured look with hotspots */}
+      <section className="bg-pearl py-20 md:py-32">
+        <div className="wrap wrap-max">
+          <LookShowcase slug="02" eyebrow={`${t.lux.featuredLabel} · ${t.lux.look} 02`} />
+        </div>
+      </section>
+
+      {/* editorial looks grid */}
+      <section className="py-24 md:py-36">
+        <Head eyebrow={t.hero.season} title={t.lux.looksTitle} text={t.lux.looksText} href={`/${lang}/obrazlar/`} link={t.home.looksAll} />
+        <div className="wrap wrap-max mt-14 grid gap-x-6 gap-y-14 sm:grid-cols-2 md:mt-20 lg:grid-cols-3 lg:gap-x-10">
+          {editorial.map((l, i) => (
+            <Reveal key={l.slug} delay={(i % 3) * 0.1} className={i % 3 === 1 ? "lg:mt-24" : i % 3 === 2 ? "lg:mt-10" : ""}>
+              <LookCard look={l} lang={lang} ratio={i % 2 ? "aspect-[4/5]" : "aspect-[3/4]"} sizes="(min-width: 1024px) 30vw, (min-width: 640px) 50vw, 100vw" />
             </Reveal>
           ))}
         </div>
       </section>
 
-      {/* looks */}
-      <section className="pt-20 md:pt-32">
-        <SectionHead label={t.home.looksLabel} title={t.home.looksTitle} href={`/${lang}/obrazlar/`} link={t.home.looksAll} />
-        <div className="no-scrollbar container-x mt-8 flex snap-x snap-mandatory scroll-px-[var(--gutter)] gap-3 overflow-x-auto md:mt-12 md:gap-4">
-          {looks.map((l) => (
-            <div key={l.slug} className="w-[70vw] shrink-0 snap-start sm:w-[42vw] md:w-[calc((100%-48px)/4)]">
-              <LookCard look={l} lang={lang} sizes="(min-width: 768px) 25vw, 70vw" />
-            </div>
-          ))}
+      {/* categories */}
+      <section className="pb-24 md:pb-36">
+        <Head eyebrow={t.home.categories} title={t.lux.categoriesTitle} href={`/${lang}/katalog/`} link={t.home.viewAll} />
+        <div className="wrap wrap-max mt-12 md:mt-16">
+          <CategoryIndex />
         </div>
       </section>
 
-      {/* new collection */}
-      <section className="py-20 md:py-32">
-        <SectionHead label={t.home.newLabel} title={t.home.newTitle} href={`/${lang}/katalog/`} link={t.home.viewAll} />
-        <div className="container-x mt-8 grid grid-cols-2 gap-x-3 gap-y-10 md:mt-12 md:gap-x-4 md:gap-y-14 lg:grid-cols-4">
+      {/* new arrivals */}
+      <section className="border-t border-hair py-24 md:py-36">
+        <Head eyebrow={t.home.newLabel} title={t.lux.newTitle} href={`/${lang}/katalog/`} link={t.home.viewAll} />
+        <div className="wrap wrap-max mt-12 grid grid-cols-2 gap-x-4 gap-y-12 md:mt-16 md:gap-x-6 md:gap-y-16 lg:grid-cols-4">
           {fresh.map((p, i) => (
-            <Reveal key={p.slug} delay={(i % 4) * 0.06}>
+            <Reveal key={p.slug} delay={(i % 4) * 0.08}>
               <ProductCard p={p} />
             </Reveal>
           ))}
         </div>
       </section>
 
-      {/* editorial: details */}
-      <section className="grid bg-sand md:grid-cols-2">
-        <div className="photo-box aspect-[3/4] md:aspect-auto md:min-h-[720px]">
-          <Img name="p2497" alt="" sizes="(min-width: 768px) 50vw, 100vw" />
-        </div>
-        <div className="container-x flex flex-col justify-center py-16 md:px-16 md:py-20 xl:px-24">
-          <Reveal>
-            <p className="label mb-4 text-navy">{t.home.detailsLabel}</p>
-            <h2 className="display text-[34px] md:text-[52px]">{t.home.detailsTitle}</h2>
-            <p className="lead mt-6 max-w-[480px]">{t.home.detailsText}</p>
-          </Reveal>
-          <div className="mt-10 grid max-w-[480px] grid-cols-2 gap-3">
-            {detailPair.map((p) => (
-              <ProductCard key={p.slug} p={p} sizes="(min-width: 768px) 15vw, 45vw" />
-            ))}
+      {/* outerwear: the one deep-navy chapter */}
+      <section className="bg-navy-deep py-24 text-white md:py-36">
+        <div className="wrap wrap-max grid items-center gap-14 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <div className="media arch mx-auto aspect-[3/4] max-w-[460px] bg-navy">
+              <InViewVideo name="outerwear" topCrop />
+            </div>
           </div>
-          <div className="mt-10">
-            <Link href={`/${lang}/obrazlar/01/`} className="btn btn-dark">
-              {t.home.detailsCta}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* outerwear */}
-      <section className="overflow-hidden bg-navy-deep text-white">
-        <div className="border-b border-white/15 py-3">
-          <div className="marquee-track">
-            {Array.from({ length: 2 }, (_, k) => (
-              <div key={k} className="flex shrink-0">
-                {Array.from({ length: 6 }, (_, j) => (
-                  <span key={j} className="label px-6 text-white/75">
-                    {t.home.outerLabel} · Guaress · {t.hero.season} ·
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="container-x grid items-center gap-10 py-16 md:grid-cols-12 md:py-24">
-          <Reveal className="md:col-span-6 lg:col-span-5">
-            <p className="label mb-4 text-white/60">{t.home.outerLabel}</p>
-            <h2 className="display text-[34px] md:text-[56px]">{t.home.outerTitle}</h2>
-            <p className="mt-6 max-w-[460px] text-[15px] font-light leading-[1.8] text-white/70">{t.home.outerText}</p>
-            <Link href={`/${lang}/katalog/?c=ustki-kiyim`} className="btn btn-white mt-10">
+          <Reveal className="lg:col-span-6 lg:col-start-7">
+            <p className="eyebrow">{t.home.outerLabel}</p>
+            <h2 className="h-title mt-5 text-[42px] text-white md:text-[64px] [&_em]:text-gold">
+              <Rich text={t.lux.outerTitle} />
+            </h2>
+            <p className="text-body mt-6 max-w-[480px] text-white/65">{t.home.outerText}</p>
+            <Link href={`/${lang}/katalog/?c=ustki-kiyim`} className="pill pill-white mt-10">
               {t.home.outerCta}
             </Link>
           </Reveal>
-          <div className="md:col-span-5 md:col-start-8 lg:col-span-4 lg:col-start-8">
-            <div className="photo-box mx-auto aspect-[9/16] max-w-[380px] bg-black">
-              <InViewVideo name="outerwear" />
-            </div>
-          </div>
         </div>
-        <div className="pb-16 md:pb-24">
+        <div className="wrap-max mt-20">
           <ProductRail items={outerwear} tone="dark" />
         </div>
       </section>
 
       {/* stylist */}
-      <section className="grid bg-ink text-white md:grid-cols-2">
-        <div className="container-x order-2 flex flex-col justify-center py-16 md:order-1 md:px-16 md:py-20 xl:px-24">
-          <Reveal>
-            <p className="label mb-4 text-white/60">{t.home.stylistLabel}</p>
-            <h2 className="display text-[34px] md:text-[52px]">{t.home.stylistTitle}</h2>
-            <p className="mt-6 max-w-[460px] text-[15px] font-light leading-[1.8] text-white/70">{t.home.stylistText}</p>
-            <a href={telHref(site.phones[0])} className="btn btn-line-white mt-10">
-              <PhoneIcon width={16} height={16} /> {t.home.stylistCta}
-            </a>
+      <section className="py-24 md:py-36">
+        <div className="wrap wrap-max grid items-center gap-14 lg:grid-cols-12">
+          <Reveal variant="unveil" className="lg:col-span-5">
+            <div className="media arch aspect-[3/4]">
+              <img src={stylistPhoto.src} srcSet={stylistPhoto.srcSet} sizes="(min-width: 1024px) 40vw, 100vw" alt="" loading="lazy" />
+            </div>
           </Reveal>
-        </div>
-        <div className="photo-box order-1 aspect-[3/4] md:order-2 md:aspect-auto md:min-h-[680px]">
-          <Img name="p2513" alt="" sizes="(min-width: 768px) 50vw, 100vw" />
+          <div className="lg:col-span-6 lg:col-start-7">
+            <Reveal>
+              <p className="eyebrow">{t.home.stylistLabel}</p>
+              <h2 className="h-title mt-5 text-[42px] md:text-[64px]">
+                <Rich text={t.lux.stylistTitle} />
+              </h2>
+              <p className="text-body mt-6 max-w-[500px]">{t.home.stylistText}</p>
+            </Reveal>
+            <ol className="mt-10 border-t border-hair">
+              {t.lux.stylistSteps.map(([title, text], i) => (
+                <Reveal as="li" key={i} delay={i * 0.1} className="flex gap-6 border-b border-hair py-6">
+                  <span className="numeral w-10 shrink-0 text-[40px] text-gold">{i + 1}</span>
+                  <span>
+                    <span className="block text-[15px] font-semibold">{title}</span>
+                    <span className="mt-1 block text-[14px] text-slate">{text}</span>
+                  </span>
+                </Reveal>
+              ))}
+            </ol>
+            <ReserveButton intent={{}} label={t.home.stylistCta} className="pill pill-navy mt-10" />
+          </div>
         </div>
       </section>
 
-      {/* stores */}
-      <section className="py-20 md:py-32">
-        <SectionHead label={t.home.storesLabel} title={t.home.storesTitle} href={`/${lang}/dokonlar/`} link={t.home.storesAll} />
-        <div className="container-x mt-8 grid gap-8 md:mt-12 md:grid-cols-12 md:gap-4">
-          <div className="photo-box zoom aspect-[3/4] md:col-span-5">
-            <Img name="v2550-store" alt="Guaress" sizes="(min-width: 768px) 40vw, 100vw" />
-          </div>
-          <ul className="md:col-span-6 md:col-start-7">
-            {stores.map((s, i) => (
-              <Reveal as="li" key={s.slug} delay={i * 0.08} className="border-b border-line py-6 first:pt-0 md:py-8">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="num text-[15px] text-navy">0{i + 1}</p>
-                    <h3 className="display mt-2 text-[24px] md:text-[30px]">{s.name[lang]}</h3>
-                    <p className="mt-3 flex items-center gap-2 text-[14px] font-light text-muted">
-                      <PinIcon width={16} height={16} /> {s.note[lang]}
-                    </p>
-                    <p className="mt-1 flex items-center gap-2 text-[14px] font-light text-muted">
-                      <ClockIcon width={16} height={16} /> {t.stores.daily} {site.hours}
-                    </p>
-                  </div>
-                  <a href={s.map} target="_blank" rel="noreferrer" className="caps mt-8 flex shrink-0 items-center gap-3 text-[11px] hover:text-navy">
-                    <span className="hidden sm:inline">{t.stores.route}</span> <ArrowRight width={28} />
-                  </a>
-                </div>
-              </Reveal>
-            ))}
-          </ul>
+      {/* boutiques */}
+      <section className="bg-pearl py-24 md:py-36">
+        <Head eyebrow={t.home.storesLabel} title={t.lux.storesTitle} href={`/${lang}/dokonlar/`} link={t.home.storesAll} />
+        <div className="wrap wrap-max mt-12 grid gap-4 md:mt-16 md:grid-cols-3 md:gap-6">
+          {stores.map((s, i) => (
+            <Reveal key={s.slug} delay={i * 0.1} className="group flex flex-col bg-ivory p-8 transition-shadow duration-700 hover:shadow-[0_30px_70px_rgba(10,20,40,.08)] md:p-10">
+              <span className="numeral text-[64px] text-gold">0{i + 1}</span>
+              <h3 className="h-title mt-6 text-[32px]">{s.name[lang]}</h3>
+              <p className="mt-4 flex items-center gap-2.5 text-[14px] text-slate">
+                <PinIcon width={17} height={17} className="text-navy" /> {s.note[lang]}
+              </p>
+              <p className="mt-2 flex items-center gap-2.5 text-[14px] text-slate">
+                <ClockIcon width={17} height={17} className="text-navy" /> {t.stores.daily} {site.hours}
+              </p>
+              <a href={s.map} target="_blank" rel="noreferrer" className="link-arrow mt-auto pt-10 text-navy">
+                {t.stores.route} <span className="arrow-line" />
+              </a>
+            </Reveal>
+          ))}
         </div>
       </section>
     </>

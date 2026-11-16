@@ -2,16 +2,18 @@
 
 import { useEffect, useRef } from "react";
 
-/** Fades + lifts its child into view once. */
+/** Adds .is-visible once in view. variant "unveil" = curtain reveal for images. */
 export function Reveal({
   children,
   delay = 0,
   className = "",
+  variant = "rise",
   as: Tag = "div",
 }: {
   children: React.ReactNode;
   delay?: number;
   className?: string;
+  variant?: "rise" | "unveil";
   as?: "div" | "section" | "li" | "article";
 }) {
   const ref = useRef<HTMLElement>(null);
@@ -27,7 +29,7 @@ export function Reveal({
           }
         }
       },
-      { rootMargin: "0px 0px -8% 0px" },
+      { rootMargin: "0px 0px -6% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -35,7 +37,7 @@ export function Reveal({
   return (
     <Tag
       ref={ref as never}
-      className={`reveal ${className}`}
+      className={`${variant === "unveil" ? "unveil" : "reveal"} ${className}`}
       style={delay ? ({ "--reveal-delay": `${delay}s` } as React.CSSProperties) : undefined}
     >
       {children}

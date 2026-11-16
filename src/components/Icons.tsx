@@ -10,7 +10,7 @@ function Base({ children, ...props }: P) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.3"
+      strokeWidth="1.4"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -23,7 +23,7 @@ function Base({ children, ...props }: P) {
 
 export const MenuIcon = (p: P) => (
   <Base {...p}>
-    <path d="M3 8.5h18M3 15.5h18" />
+    <path d="M4 7h16M4 12h10M4 17h16" />
   </Base>
 );
 export const SearchIcon = (p: P) => (

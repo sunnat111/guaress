@@ -7,7 +7,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const base = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const emblem = readFileSync(join(root, "src/brand/emblem.svg"), "utf8")
   .replace("<svg ", '<svg width="72" height="72" ')
-  .replaceAll("currentColor", "#0b3a8a");
+  .replaceAll("currentColor", "#0e2f66");
 
 const html = `<!doctype html>
 <html lang="uz">
@@ -17,12 +17,13 @@ const html = `<!doctype html>
 <title>404 — Guaress</title>
 <link rel="icon" href="${base}/icon.svg">
 <style>
-  html,body{margin:0;height:100%;background:#f2eee8;color:#141414;font-family:Jost,system-ui,-apple-system,"Segoe UI",sans-serif}
+  html,body{margin:0;height:100%;background:#fbf9f5;color:#15171c;font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif}
   main{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box}
-  h1{font-weight:300;text-transform:uppercase;letter-spacing:.06em;font-size:clamp(32px,6vw,56px);margin:28px 0 10px}
-  p{color:#6d6862;font-weight:300;margin:0 0 32px}
-  a{display:inline-flex;align-items:center;height:52px;padding:0 28px;background:#141414;color:#fff;text-decoration:none;font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;margin:4px}
-  a:hover{background:#0b3a8a}
+  h1{font-family:"Cormorant Garamond","Times New Roman",serif;font-weight:300;font-size:clamp(72px,14vw,140px);line-height:1;margin:32px 0 8px;color:#0e2f66;font-style:italic}
+  p{color:#5b5e66;margin:0 0 36px;font-size:15px}
+  a{display:inline-flex;align-items:center;height:50px;padding:0 28px;border-radius:999px;background:#0e2f66;color:#fff;text-decoration:none;font-size:13px;font-weight:600;margin:4px}
+  a+a{background:transparent;color:#15171c;border:1px solid rgba(21,23,28,.2)}
+  a:hover{background:#15171c;color:#fff}
 </style>
 </head>
 <body><main>

@@ -35,19 +35,13 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-export const viewport: Viewport = { themeColor: "#092e66" };
-
-// show the promo bar before hydration unless it was closed in this session
-const promoScript = `try{if(sessionStorage.getItem("gs-promo-closed")!=="1")document.documentElement.classList.add("has-promo")}catch(e){document.documentElement.classList.add("has-promo")}`;
+export const viewport: Viewport = { themeColor: "#fbf9f5" };
 
 export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   return (
     <html lang={lang} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: promoScript }} />
-      </head>
       <body>
         <Providers lang={lang}>
           <Header />

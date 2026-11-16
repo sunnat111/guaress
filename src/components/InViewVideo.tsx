@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { asset } from "@/lib/asset";
 
-/** Muted loop that only plays while at least 25% visible. */
-export function InViewVideo({ name, className = "" }: { name: string; className?: string }) {
+/** Muted loop that only plays while at least 25% visible. topCrop hides a caption burned into the lower part. */
+export function InViewVideo({ name, className = "", topCrop = false }: { name: string; className?: string; topCrop?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const v = ref.current;
@@ -30,6 +30,7 @@ export function InViewVideo({ name, className = "" }: { name: string; className?
       playsInline
       preload="none"
       aria-hidden="true"
+      style={topCrop ? { height: "150%", objectPosition: "50% 0%" } : undefined}
     />
   );
 }

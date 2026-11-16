@@ -1,118 +1,90 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { asset } from "@/lib/asset";
-import { useSite } from "./Providers";
+import { getLook, lookTotal } from "@/data/looks";
+import type { Locale } from "@/i18n/config";
+import { getDict } from "@/i18n";
+import { asset, formatPrice, photo } from "@/lib/asset";
+import { SailMark } from "./Logo";
+import { Rich } from "./Rich";
 
-/* films produced by scripts/build-media.py; duration in seconds (for the Stories bars) */
-// topCrop: the outerwear film has a caption burned in at ~70% height; zoom in from the top to hide it
-const FILMS = [
-  { name: "park", duration: 28.4, topCrop: false },
-  { name: "store", duration: 22.7, topCrop: false },
-  { name: "outerwear", duration: 10.3, topCrop: true },
-];
-const CROP: React.CSSProperties = { height: "150%", objectPosition: "50% 0%" };
-// desktop order: outerwear | park (centre) | store
-const DESKTOP = [FILMS[2], FILMS[0], FILMS[1]];
-
-export function Hero() {
-  const { lang, t } = useSite();
-  const [desktop, setDesktop] = useState<boolean | null>(null);
-  const [idx, setIdx] = useState(0);
-  const mobileRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const on = () => setDesktop(mq.matches);
-    on();
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-
-  useEffect(() => {
-    if (desktop === false) mobileRef.current?.play().catch(() => {});
-  }, [idx, desktop]);
-
-  const go = (d: number) => setIdx((i) => (i + d + FILMS.length) % FILMS.length);
+export function Hero({ lang }: { lang: Locale }) {
+  const t = getDict(lang);
+  const look = getLook("09")!;
+  const { total } = lookTotal(look);
+  const thumb = photo(look.photos[0]);
 
   return (
-    <section className="relative h-[100svh] min-h-[560px] overflow-hidden bg-ink text-white">
-      {/* desktop: three films side by side */}
-      <div className="absolute inset-0 hidden grid-cols-3 gap-px md:grid">
-        {DESKTOP.map((f, i) => (
-          <div key={f.name} className="photo-box bg-ink">
-            {desktop ? (
-              <video
-                src={asset(`/media/film-${f.name}.mp4`)}
-                poster={asset(`/media/film-${f.name}.webp`)}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload={i === 1 ? "auto" : "metadata"}
-                style={f.topCrop ? CROP : undefined}
-              />
-            ) : (
-              <img src={asset(`/media/film-${f.name}.webp`)} alt="" style={f.topCrop ? CROP : undefined} />
-            )}
+    <section className="pt-top relative overflow-hidden">
+      <SailMark className="pointer-events-none absolute -left-24 top-24 h-[620px] text-navy opacity-[0.035] md:h-[820px]" />
+      <div className="wrap wrap-max relative grid gap-12 pb-20 pt-6 md:pb-24 md:pt-8 lg:grid-cols-12 lg:items-end lg:gap-10">
+        <div className="lg:col-span-6 lg:pb-6 xl:col-span-6">
+          <p className="eyebrow fade-up">{t.hero.season}</p>
+          <h1 className="h-display mt-6 text-[54px] sm:text-[76px] md:text-[88px] lg:text-[min(108px,11.2svh)]">
+            {t.lux.heroTitle.map((line, i) => (
+              <span key={i} className="line-mask">
+                <span style={{ animationDelay: `${0.12 + i * 0.12}s` }}>
+                  <Rich text={line} />
+                </span>
+              </span>
+            ))}
+          </h1>
+          <p className="text-body fade-up mt-7 max-w-[440px]" style={{ animationDelay: ".5s" }}>
+            {t.lux.heroText}
+          </p>
+          <div className="fade-up mt-10 flex flex-wrap items-center gap-x-8 gap-y-4" style={{ animationDelay: ".62s" }}>
+            <Link href={`/${lang}/katalog/`} className="pill pill-navy">
+              {t.lux.heroCta}
+            </Link>
+            <Link href={`/${lang}/obrazlar/`} className="link-arrow">
+              {t.lux.heroLooks} <span className="arrow-line" />
+            </Link>
           </div>
-        ))}
-      </div>
+          <dl className="fade-up mt-12 grid max-w-[520px] grid-cols-3 border-t border-hair pt-6" style={{ animationDelay: ".75s" }}>
+            {t.lux.stats.map(([n, label], i) => (
+              <div key={i} className={i > 0 ? "border-l border-hair pl-5" : ""}>
+                <dt className="serif text-[30px] font-light leading-none text-navy md:text-[36px]">{n}</dt>
+                <dd className="mt-2 text-[12px] font-medium text-slate">{label}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
 
-      {/* mobile: Stories */}
-      <div className="absolute inset-0 md:hidden">
-        <div className="photo-box h-full bg-ink">
-          {desktop === false ? (
+        <div className="lg:col-span-6 xl:col-span-5 xl:col-start-8">
+          <div className="relative lg:ml-auto lg:max-w-[min(470px,calc((100svh-var(--header-h)-80px)*0.75))]">
+          <div className="media arch fade-up aspect-[4/5] w-full lg:aspect-[3/4]" style={{ animationDelay: ".2s" }}>
             <video
-              key={FILMS[idx].name}
-              ref={mobileRef}
-              src={asset(`/media/film-${FILMS[idx].name}.mp4`)}
-              poster={asset(`/media/film-${FILMS[idx].name}.webp`)}
+              src={asset("/media/film-park.mp4")}
+              poster={asset("/media/film-park.webp")}
               autoPlay
               muted
+              loop
               playsInline
               preload="auto"
-              onEnded={() => go(1)}
-              style={FILMS[idx].topCrop ? CROP : undefined}
+              aria-hidden="true"
             />
-          ) : (
-            <img src={asset(`/media/film-${FILMS[0].name}.webp`)} alt="" />
-          )}
-        </div>
-        <div className="absolute inset-x-4 z-20 flex gap-1.5" style={{ top: "calc(var(--top-offset) + 10px)" }}>
-          {FILMS.map((f, i) => (
-            <span key={f.name} className="h-[2px] flex-1 overflow-hidden bg-white/30">
-              <span
-                key={`${f.name}-${idx}`}
-                className={`story-bar block h-full bg-white ${i < idx ? "is-done" : i === idx && desktop === false ? "is-active" : ""}`}
-                style={{ animationDuration: `${f.duration}s` }}
-              />
+          </div>
+          <span className="pointer-events-none absolute -right-3 top-1/2 hidden origin-center translate-x-1/2 -translate-y-1/2 rotate-90 text-[10px] font-bold uppercase tracking-[0.5em] text-mist xl:block">
+            Guaress · {t.home.storesLabel} · {t.hero.season}
+          </span>
+          <Link
+            href={`/${lang}/obrazlar/${look.slug}/`}
+            className="fade-up group absolute -bottom-8 left-4 flex w-[270px] items-center gap-4 bg-white p-3 pr-5 shadow-[0_24px_60px_rgba(10,20,40,.14)] md:left-auto md:right-8 lg:-left-24 lg:right-auto"
+            style={{ animationDelay: ".9s" }}
+          >
+            <span className="media aspect-[3/4] w-[58px] shrink-0">
+              <img src={thumb.small} alt="" />
             </span>
-          ))}
+            <span className="min-w-0">
+              <span className="block text-[9.5px] font-bold uppercase tracking-[0.22em] text-gold">{t.lux.nowWearing}</span>
+              <span className="serif mt-1 block text-[20px] leading-tight">
+                {look.num} · {look.title[lang]}
+              </span>
+              <span className="mt-1 block text-[12px] text-slate">
+                {formatPrice(total)}+ {t.currency}
+              </span>
+            </span>
+          </Link>
+          </div>
         </div>
-        <button className="absolute inset-y-0 left-0 z-10 w-1/4" onClick={() => go(-1)} aria-label={t.hero.prev} />
-        <button className="absolute inset-y-0 right-0 z-10 w-1/4" onClick={() => go(1)} aria-label={t.hero.next} />
-      </div>
-
-      {/* veil */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(10,14,24,.55) 0%, rgba(10,14,24,0) 22%), linear-gradient(to top, rgba(10,14,24,.78) 0%, rgba(10,14,24,.25) 45%, rgba(10,14,24,0) 65%)",
-        }}
-      />
-
-      <div className="rise pointer-events-none absolute inset-x-0 bottom-[8%] z-20 flex flex-col items-center px-6 text-center">
-        <p className="label mb-5 text-white/85">{t.hero.season}</p>
-        <h1 className="display text-[42px] md:text-[78px]">{t.hero.title}</h1>
-        <p className="mt-4 max-w-[440px] text-[14px] font-light leading-relaxed text-white/80 md:text-[15px]">
-          {t.hero.text}
-        </p>
-        <Link href={`/${lang}/obrazlar/`} className="btn btn-white pointer-events-auto mt-8">
-          {t.hero.cta}
-        </Link>
       </div>
     </section>
   );
