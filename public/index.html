@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guaress</title>
+<meta name="robots" content="noindex">
+<script>
+  (function () {
+    var lang = "uz";
+    try { var s = localStorage.getItem("gs-locale"); if (s === "ru" || s === "uz") lang = s; } catch (e) {}
+    var base = location.pathname.replace(/index\.html$/, "").replace(/\/?$/, "/");
+    location.replace(base + lang + "/");
+  })();
+</script>
+<noscript><meta http-equiv="refresh" content="0; url=uz/"></noscript>
+<style>body{margin:0;background:#f2eee8}</style>
+</head>
+<body></body>
+</html>

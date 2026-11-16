@@ -1,0 +1,381 @@
+@import "tailwindcss";
+@import "@fontsource-variable/jost";
+@import "@fontsource/cormorant-garamond/600.css";
+
+/* ------------------------------------------------------------------
+   Guaress design tokens
+   paper/sand come from the logo background, navy from the sails.
+------------------------------------------------------------------- */
+@theme {
+  --color-paper: #f2eee8;
+  --color-sand: #e5d9cd;
+  --color-ink: #141414;
+  --color-muted: #6d6862;
+  --color-faint: #a39d95;
+  --color-line: #dcd4ca;
+  --color-navy: #0b3a8a;
+  --color-navy-deep: #092e66;
+
+  --font-sans: "Jost Variable", "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Cormorant Garamond", "Times New Roman", serif;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  --gutter: 16px;
+  --promo-h: 0px;
+  --header-h: 64px;
+  --top-offset: calc(var(--promo-h) + var(--header-h));
+}
+html.has-promo {
+  --promo-h: 36px;
+}
+@media (min-width: 768px) {
+  :root {
+    --gutter: 32px;
+  }
+}
+@media (min-width: 1280px) {
+  :root {
+    --gutter: 48px;
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body.scroll-locked {
+  overflow: hidden;
+}
+::selection {
+  background: var(--color-navy);
+  color: #fff;
+}
+:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+@layer components {
+/* ---------------- layout ---------------- */
+.container-x {
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+.pt-top {
+  padding-top: var(--top-offset);
+}
+
+/* ---------------- typography ---------------- */
+.display {
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.04;
+}
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.caps {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.lead {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+.wordmark {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.num {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 0.85;
+}
+
+/* ---------------- buttons & links ---------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 28px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.35s var(--ease-out-soft),
+    color 0.35s var(--ease-out-soft),
+    border-color 0.35s var(--ease-out-soft);
+  cursor: pointer;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-dark {
+  background: var(--color-ink);
+  color: #fff;
+}
+.btn-dark:hover:not(:disabled) {
+  background: var(--color-navy);
+}
+.btn-navy {
+  background: var(--color-navy);
+  color: #fff;
+}
+.btn-navy:hover:not(:disabled) {
+  background: var(--color-navy-deep);
+}
+.btn-line {
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+.btn-line:hover:not(:disabled) {
+  background: var(--color-ink);
+  color: #fff;
+}
+.btn-white {
+  background: #fff;
+  color: var(--color-ink);
+}
+.btn-white:hover {
+  background: var(--color-sand);
+}
+.btn-line-white {
+  border-color: rgb(255 255 255 / 0.55);
+  color: #fff;
+}
+.btn-line-white:hover {
+  background: #fff;
+  color: var(--color-ink);
+  border-color: #fff;
+}
+
+.link-line {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  padding-bottom: 3px;
+  transition: background-size 0.5s var(--ease-out-soft);
+}
+.link-line:hover {
+  background-size: 0% 1px;
+  background-position: 100% 100%;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: opacity 0.3s;
+}
+.icon-btn:hover {
+  opacity: 0.55;
+}
+
+/* ---------------- media ---------------- */
+.photo-box {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-sand);
+}
+.photo-box > img,
+.photo-box > video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.zoom img {
+  transition: transform 1.6s var(--ease-out-soft);
+}
+.zoom:hover img {
+  transform: scale(1.035);
+}
+
+/* ---------------- motion ---------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 1s var(--ease-out-soft),
+    transform 1s var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0s);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise > * {
+  animation: rise-in 1.1s var(--ease-out-soft) both;
+}
+.rise > *:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.rise > *:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.rise > *:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes story-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.story-bar {
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.story-bar.is-done {
+  transform: scaleX(1);
+}
+.story-bar.is-active {
+  animation: story-progress linear forwards;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+
+/* panels */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgb(20 20 20 / 0.35);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s var(--ease-out-soft);
+}
+.backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  z-index: 70;
+  width: min(440px, 100%);
+  background: var(--color-paper);
+  transition: transform 0.5s var(--ease-out-soft);
+  display: flex;
+  flex-direction: column;
+}
+.drawer-left {
+  left: 0;
+  transform: translateX(-100%);
+}
+.drawer-right {
+  right: 0;
+  transform: translateX(100%);
+}
+.drawer.is-open {
+  transform: none;
+}
+.sheet-top {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 70;
+  background: var(--color-paper);
+  transform: translateY(-100%);
+  transition: transform 0.5s var(--ease-out-soft);
+}
+.sheet-top.is-open {
+  transform: none;
+}
+
+/* accordion */
+.acc-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s var(--ease-out-soft);
+}
+.acc-body.is-open {
+  grid-template-rows: 1fr;
+}
+.acc-body > div {
+  overflow: hidden;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

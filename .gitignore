@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+# original films are ~55 MB; web encodes live in public/media
+source/video/*
+!source/video/.gitkeep
