@@ -1,12 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getLook, lookTotal, resolveItem } from "@/data/looks";
 import { formatPrice, photo } from "@/lib/asset";
+import { CloseIcon } from "./Icons";
 import { Rich } from "./Rich";
 import { SailMark } from "./Logo";
 import { useSite } from "./Providers";
+import type { Locale } from "@/i18n/config";
+import type { Dict } from "@/i18n";
+
+type Item = ReturnType<typeof resolveItem>;
+
+function ItemCard({ it, lang, t }: { it: Item; lang: Locale; t: Dict }) {
+  return (
+    <>
+      <div className="flex items-center gap-3">
+        <span className="media aspect-[3/4] w-12 shrink-0">
+          {it.product ? <img src={photo(it.product.photos[0]).small} alt="" /> : <SailMark className="absolute inset-0 m-auto h-5 text-mist" />}
+        </span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-medium leading-snug">{it.name[lang]}</span>
+          <span className="price mt-0.5 block text-[16px]">
+            {it.price != null ? `${formatPrice(it.price)} ${t.currency}` : <span className="font-sans text-[12px] text-slate">{t.product.priceOnRequest}</span>}
+          </span>
+        </span>
+      </div>
+      {it.product && (
+        <Link href={`/${lang}/katalog/${it.product.slug}/`} className="link-arrow mt-3 text-[12px] text-navy">
+          <span className="capitalize">{t.product.readMore}</span>
+          <span className="arrow-line" />
+        </Link>
+      )}
+    </>
+  );
+}
 
 /**
  * A look photo with tappable markers on each garment, next to the item list.
@@ -28,15 +57,20 @@ export function LookShowcase({
   const { lang, t, openReserve } = useSite();
   const look = getLook(slug)!;
   const [active, setActive] = useState<number | null>(null);
+  const pointer = useRef<string>("");
   const items = look.items.map(resolveItem);
   const { total, complete } = lookTotal(look);
   const ph = photo(look.spot.photo);
   const H = headingAs;
 
+
   return (
     <div className="grid items-center gap-10 md:grid-cols-2 md:gap-14 xl:gap-24">
       <div className="relative">
-        <div className="media aspect-[3/4]">
+        <div
+          className="media aspect-[3/4]"
+          onPointerLeave={(e) => e.pointerType === "mouse" && setActive(null)}
+        >
           <img
             src={ph.src}
             srcSet={ph.srcSet}
@@ -44,54 +78,67 @@ export function LookShowcase({
             alt={look.title[lang]}
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : undefined}
+            onClick={() => setActive(null)}
           />
           {look.spot.points.map((pt) => {
             const it = items[pt.item];
             const on = active === pt.item;
             return (
               <div key={pt.item} className="absolute" style={{ left: `${pt.x}%`, top: `${pt.y}%` }}>
+                {/* 44px touch target around a 30px marker */}
                 <button
-                  onMouseEnter={() => setActive(pt.item)}
-                  onFocus={() => setActive(pt.item)}
-                  onClick={() => setActive(on ? null : pt.item)}
+                  type="button"
+                  onPointerDown={(e) => (pointer.current = e.pointerType)}
+                  onPointerEnter={(e) => e.pointerType === "mouse" && setActive(pt.item)}
+                  onClick={() =>
+                    // mouse: hover already opened it, a click keeps it open; touch/keyboard: toggle
+                    setActive((a) => (a === pt.item && pointer.current !== "mouse" ? null : pt.item))
+                  }
                   aria-label={it.name[lang]}
                   aria-pressed={on}
-                  className={`hotspot relative -ml-[15px] -mt-[15px] flex h-[30px] w-[30px] items-center justify-center rounded-full transition-all duration-500 ${
-                    on ? "scale-110 bg-navy text-white" : "bg-white/95 text-navy"
-                  }`}
+                  className="relative -ml-[22px] -mt-[22px] flex h-11 w-11 touch-manipulation items-center justify-center"
                 >
-                  <span className="relative text-[15px] leading-none">{on ? "–" : "+"}</span>
+                  <span
+                    className={`hotspot relative flex h-[30px] w-[30px] items-center justify-center rounded-full shadow-[0_4px_14px_rgba(0,0,0,.18)] transition-all duration-500 ${
+                      on ? "scale-110 bg-navy text-white" : "bg-white/95 text-navy"
+                    }`}
+                  >
+                    <span className="relative text-[16px] leading-none">{on ? "–" : "+"}</span>
+                  </span>
                 </button>
                 {on && (
                   <div
-                    className={`fade-up absolute top-6 z-10 hidden w-[230px] rounded-sm bg-white p-3 shadow-[0_18px_50px_rgba(10,20,40,.16)] md:block ${
+                    className={`fade-up absolute top-7 z-10 hidden w-[240px] rounded-sm bg-white p-3 text-ink shadow-[0_18px_50px_rgba(10,20,40,.16)] md:block ${
                       pt.x > 55 ? "right-0" : "left-0"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="media aspect-[3/4] w-12 shrink-0">
-                        {it.product ? <img src={photo(it.product.photos[0]).small} alt="" /> : <SailMark className="absolute inset-0 m-auto h-5 text-mist" />}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-[13px] font-medium leading-snug">{it.name[lang]}</span>
-                        <span className="price mt-0.5 block text-[16px]">
-                          {it.price != null ? `${formatPrice(it.price)} ${t.currency}` : <span className="font-sans text-[12px] text-slate">{t.product.priceOnRequest}</span>}
-                        </span>
-                      </span>
-                    </div>
-                    {it.product && (
-                      <Link href={`/${lang}/katalog/${it.product.slug}/`} className="link-arrow mt-3 text-[12px] text-navy">
-                        <span className="capitalize">{t.product.readMore}</span>
-                        <span className="arrow-line" />
-                      </Link>
-                    )}
+                    <ItemCard it={it} lang={lang} t={t} />
                   </div>
                 )}
               </div>
             );
           })}
+
+          {/* phones: the active item as a card along the bottom of the photo */}
+          {active !== null && (
+            <div className="fade-up absolute inset-x-3 bottom-3 z-20 rounded-sm bg-white p-3 pr-12 text-ink shadow-[0_18px_50px_rgba(10,20,40,.22)] md:hidden">
+              <ItemCard it={items[active]} lang={lang} t={t} />
+              <button
+                type="button"
+                onClick={() => setActive(null)}
+                className="absolute right-1.5 top-1.5 flex h-10 w-10 items-center justify-center rounded-full text-slate"
+                aria-label={t.nav.close}
+              >
+                <CloseIcon width={16} height={16} />
+              </button>
+            </div>
+          )}
         </div>
-        <span className="numeral pointer-events-none absolute -bottom-5 right-4 text-[96px] text-white/95 drop-shadow-[0_6px_30px_rgba(0,0,0,.25)] md:-bottom-8 md:right-8 md:text-[150px]">
+        <span
+          className={`numeral pointer-events-none absolute -bottom-5 right-4 text-[96px] text-white/95 drop-shadow-[0_6px_30px_rgba(0,0,0,.25)] transition-opacity duration-500 md:-bottom-8 md:right-8 md:text-[150px] ${
+            active !== null ? "max-md:opacity-0" : ""
+          }`}
+        >
           {look.num}
         </span>
       </div>

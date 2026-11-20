@@ -17,14 +17,25 @@ export function switchLangPath(pathname: string, to: string): string {
 export function Header() {
   const { lang, t, open, openReserve, favorites } = useSite();
   const pathname = usePathname();
+  const isHome = pathname === `/${lang}/` || pathname === `/${lang}`;
   const [scrolled, setScrolled] = useState(false);
+  const [overHero, setOverHero] = useState(isHome);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 8);
+      const hero = isHome ? document.querySelector<HTMLElement>("[data-hero]") : null;
+      setOverHero(!!hero && window.scrollY < hero.offsetHeight - 90);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [isHome]);
+  const light = overHero;
 
   const nav = [
     { href: `/${lang}/katalog/`, label: t.nav.catalog },
@@ -34,14 +45,18 @@ export function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow] duration-700 ${
-        scrolled ? "bg-ivory/88 shadow-[0_1px_0_var(--color-hair)] backdrop-blur-xl" : "bg-ivory"
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,color] duration-700 ${
+        light
+          ? "bg-transparent text-white"
+          : scrolled
+            ? "bg-ivory/88 text-ink shadow-[0_1px_0_var(--color-hair)] backdrop-blur-xl"
+            : "bg-ivory text-ink"
       }`}
       style={{ height: "var(--header-h)" }}
     >
       <div className="wrap wrap-max grid h-full grid-cols-[1fr_auto] items-center lg:grid-cols-[1fr_auto_1fr]">
         <Link href={`/${lang}/`} className="justify-self-start" aria-label="Guaress">
-          <Logo />
+          <Logo light={light} />
         </Link>
 
         <nav className="hidden items-center gap-10 lg:flex" aria-label={t.nav.menu}>
@@ -52,8 +67,8 @@ export function Header() {
                 key={n.href}
                 href={n.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative text-[13.5px] font-medium transition-colors hover:text-navy ${
-                  active ? "text-navy after:absolute after:-bottom-2 after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-gold" : ""
+                className={`relative text-[13.5px] font-medium transition-colors ${light ? "hover:text-white/70" : "hover:text-navy"} ${
+                  active ? `${light ? "" : "text-navy"} after:absolute after:-bottom-2 after:left-1/2 after:h-1 after:w-1 after:-translate-x-1/2 after:rounded-full after:bg-gold` : ""
                 }`}
               >
                 {n.label}
@@ -66,21 +81,21 @@ export function Header() {
           <div className="mr-3 hidden items-center gap-1 text-[12px] font-semibold tracking-[0.08em] md:flex">
             {locales.map((l, i) => (
               <span key={l} className="flex items-center">
-                {i > 0 && <span className="mx-1.5 h-3 w-px bg-hair" />}
+                {i > 0 && <span className="mx-1.5 h-3 w-px bg-current opacity-25" />}
                 <Link
                   href={switchLangPath(pathname, l)}
                   aria-current={l === lang ? "true" : undefined}
-                  className={l === lang ? "text-ink" : "text-mist hover:text-ink"}
+                  className={l === lang ? "" : "opacity-50 hover:opacity-100"}
                 >
                   {l.toUpperCase()}
                 </Link>
               </span>
             ))}
           </div>
-          <button onClick={() => open("search")} className="round-btn" aria-label={t.nav.search}>
+          <button onClick={() => open("search")} className={`round-btn ${light ? "hover:bg-white/15" : ""}`} aria-label={t.nav.search}>
             <SearchIcon />
           </button>
-          <Link href={`/${lang}/sevimlilar/`} className="round-btn relative" aria-label={t.nav.favorites}>
+          <Link href={`/${lang}/sevimlilar/`} className={`round-btn relative ${light ? "hover:bg-white/15" : ""}`} aria-label={t.nav.favorites}>
             <BookmarkIcon />
             {favorites.length > 0 && (
               <span className="absolute right-[7px] top-[7px] flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-gold px-[4px] text-[9.5px] font-bold text-white">
@@ -88,10 +103,10 @@ export function Header() {
               </span>
             )}
           </Link>
-          <button onClick={() => openReserve({})} className="pill pill-navy pill-sm ml-3 hidden md:inline-flex">
+          <button onClick={() => openReserve({})} className={`pill pill-sm ml-3 hidden md:inline-flex ${light ? "pill-white" : "pill-navy"}`}>
             {t.lux.book}
           </button>
-          <button onClick={() => open("menu")} className="round-btn -mr-2 lg:hidden" aria-label={t.nav.menu}>
+          <button onClick={() => open("menu")} className={`round-btn -mr-2 lg:hidden ${light ? "hover:bg-white/15" : ""}`} aria-label={t.nav.menu}>
             <MenuIcon />
           </button>
         </div>

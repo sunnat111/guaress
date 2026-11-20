@@ -33,10 +33,10 @@ export function Emblem({ className }: { className?: string }) {
 }
 
 /** Horizontal lock-up: emblem + serif wordmark. */
-export function Logo({ className = "" }: { className?: string }) {
+export function Logo({ className = "", light = false }: { className?: string; light?: boolean }) {
   return (
     <span className={`flex items-center gap-3 ${className}`} aria-label="Guaress">
-      <Emblem className="h-[30px] text-navy md:h-[34px]" />
+      <Emblem className={`h-[30px] transition-colors duration-700 md:h-[34px] ${light ? "text-white" : "text-navy"}`} />
       <span className="wordmark text-[17px] md:text-[19px]">Guaress</span>
     </span>
   );

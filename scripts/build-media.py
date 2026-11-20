@@ -75,11 +75,13 @@ STILLS: dict[str, tuple[str, float, tuple]] = {
     "v7101-sign": ("outerwear-IMG_7101.mp4", 0.2, ("box", 0, 0, 968, 1290)),
 }
 
-# Films: name -> (video file, start, end, poster time)
+# Films: name -> (video file, start, end, poster time, crop or None)
+# "park-wide" is a landscape band of the vertical park film for the desktop hero background.
 FILMS = {
-    "park": ("park-IMG_6893.mp4", 0.0, 28.4, 2.6),
-    "store": ("store-guaress.mp4", 0.0, 22.7, 0.4),
-    "outerwear": ("outerwear-IMG_7101.mp4", 0.0, 10.3, 0.3),
+    "park": ("park-IMG_6893.mp4", 0.0, 28.4, 2.6, None),
+    "park-wide": ("park-IMG_6893.mp4", 0.0, 28.4, 2.6, "crop=1072:840:0:460"),
+    "store": ("store-guaress.mp4", 0.0, 22.7, 0.4, None),
+    "outerwear": ("outerwear-IMG_7101.mp4", 0.0, 10.3, 0.3, None),
 }
 
 
@@ -141,18 +143,23 @@ def main() -> None:
         save_pair(crop_34(grab_frame(video_dir / vid, t), crop), name)
     print(f"stills: {len(STILLS)}")
 
-    for name, (vid, start, end, poster_t) in FILMS.items():
+    for name, (vid, start, end, poster_t, crop) in FILMS.items():
         dst = OUT / f"film-{name}.mp4"
+        vf = f"{crop},fps=30" if crop else "scale=720:-2,fps=30"
         subprocess.run(
             [
                 "ffmpeg", "-v", "error", "-y", "-ss", str(start), "-to", str(end), "-i", str(video_dir / vid),
-                "-an", "-vf", "scale=720:-2,fps=30", "-c:v", "libx264", "-profile:v", "high",
-                "-crf", "26", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(dst),
+                "-an", "-vf", vf, "-c:v", "libx264", "-profile:v", "high",
+                "-crf", "24" if crop else "26", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(dst),
             ],
             check=True,
         )
         poster = grab_frame(video_dir / vid, poster_t).convert("RGB")
-        poster = poster.resize((720, round(poster.height * 720 / poster.width)), Image.LANCZOS)
+        if crop:
+            w, h, x, y = (int(v) for v in crop.split("=")[1].split(":"))
+            poster = poster.crop((x, y, x + w, y + h))
+        else:
+            poster = poster.resize((720, round(poster.height * 720 / poster.width)), Image.LANCZOS)
         poster.save(OUT / f"film-{name}.webp", "WEBP", quality=80, method=6)
         print(f"film {name}: {dst.stat().st_size // 1024} KB")
 
