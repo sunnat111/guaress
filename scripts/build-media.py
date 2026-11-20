@@ -75,14 +75,26 @@ STILLS: dict[str, tuple[str, float, tuple]] = {
     "v7101-sign": ("outerwear-IMG_7101.mp4", 0.2, ("box", 0, 0, 968, 1290)),
 }
 
-# Films: name -> (video file, start, end, poster time, crop or None)
+# Films. Each is written twice:
+#   film-<name>.av1.mp4  AV1 (served first: better quality at a third of the size)
+#   film-<name>.mp4      H.264 fallback for browsers without AV1 (e.g. older iPhones)
+# filters: ffmpeg video filter chain before encoding ("cas" = light sharpening, which
+# helps because the films are stretched to fill large screens).
 # "park-wide" is a landscape band of the vertical park film for the desktop hero background.
-FILMS = {
-    "park": ("park-IMG_6893.mp4", 0.0, 28.4, 2.6, None),
-    "park-wide": ("park-IMG_6893.mp4", 0.0, 28.4, 2.6, "crop=1072:840:0:460"),
-    "store": ("store-guaress.mp4", 0.0, 22.7, 0.4, None),
-    "outerwear": ("outerwear-IMG_7101.mp4", 0.0, 10.3, 0.3, None),
+Film = dict
+FILMS: dict[str, Film] = {
+    "park": dict(src="park-IMG_6893.mp4", start=0.0, end=28.4, poster=2.6,
+                 filters="cas=0.2", h264_crf=23, av1_crf=31,
+                 h264_max="1600k", av1_max=1100),
+    "park-wide": dict(src="park-IMG_6893.mp4", start=0.0, end=28.4, poster=2.6,
+                      filters="crop=1072:840:0:460,cas=0.3", h264_crf=21, av1_crf=26,
+                      h264_max="1600k", av1_max=1000),
+    "store": dict(src="store-guaress.mp4", start=0.0, end=22.7, poster=0.4,
+                  filters="scale=720:-2:flags=lanczos,cas=0.15", h264_crf=25, av1_crf=33),
+    "outerwear": dict(src="outerwear-IMG_7101.mp4", start=0.0, end=10.3, poster=0.3,
+                      filters="scale=720:-2:flags=lanczos,cas=0.15", h264_crf=25, av1_crf=33),
 }
+
 
 
 def crop_34(im: Image.Image, crop: tuple) -> Image.Image:
@@ -143,25 +155,39 @@ def main() -> None:
         save_pair(crop_34(grab_frame(video_dir / vid, t), crop), name)
     print(f"stills: {len(STILLS)}")
 
-    for name, (vid, start, end, poster_t, crop) in FILMS.items():
-        dst = OUT / f"film-{name}.mp4"
-        vf = f"{crop},fps=30" if crop else "scale=720:-2,fps=30"
+    only = set(sys.argv[1:])  # optional: build only the named films
+    for name, f in FILMS.items():
+        if only and name not in only:
+            continue
+        vf = f"{f['filters']},fps=30"
+        base = ["ffmpeg", "-v", "error", "-y", "-ss", str(f["start"]), "-to", str(f["end"]),
+                "-i", str(video_dir / f["src"]), "-an", "-vf", vf, "-pix_fmt", "yuv420p"]
+        h264 = OUT / f"film-{name}.mp4"
         subprocess.run(
-            [
-                "ffmpeg", "-v", "error", "-y", "-ss", str(start), "-to", str(end), "-i", str(video_dir / vid),
-                "-an", "-vf", vf, "-c:v", "libx264", "-profile:v", "high",
-                "-crf", "24" if crop else "26", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(dst),
-            ],
+            base + ["-c:v", "libx264", "-profile:v", "high", "-preset", "slow", "-tune", "film",
+                    "-crf", str(f["h264_crf"]),
+                    # optional cap so grainy scenes cannot balloon the file (capped CRF)
+                    *(["-maxrate", f["h264_max"], "-bufsize", f"{2 * int(f['h264_max'].rstrip('k'))}k"] if "h264_max" in f else []),
+                    "-movflags", "+faststart", str(h264)],
             check=True,
         )
-        poster = grab_frame(video_dir / vid, poster_t).convert("RGB")
-        if crop:
-            w, h, x, y = (int(v) for v in crop.split("=")[1].split(":"))
-            poster = poster.crop((x, y, x + w, y + h))
-        else:
-            poster = poster.resize((720, round(poster.height * 720 / poster.width)), Image.LANCZOS)
-        poster.save(OUT / f"film-{name}.webp", "WEBP", quality=80, method=6)
-        print(f"film {name}: {dst.stat().st_size // 1024} KB")
+        av1 = OUT / f"film-{name}.av1.mp4"
+        subprocess.run(
+            base + ["-c:v", "libsvtav1", "-preset", "6", "-crf", str(f["av1_crf"]),
+                    *(["-svtav1-params", f"mbr={f['av1_max']}"] if "av1_max" in f else []),
+                    "-movflags", "+faststart", str(av1)],
+            check=True,
+            stderr=subprocess.DEVNULL,
+        )
+        poster = grab_frame(video_dir / f["src"], f["poster"]).convert("RGB")
+        for flt in f["filters"].split(","):
+            if flt.startswith("crop="):
+                w, h, x, y = (int(v) for v in flt.split("=")[1].split(":"))
+                poster = poster.crop((x, y, x + w, y + h))
+            elif flt.startswith("scale=720"):
+                poster = poster.resize((720, round(poster.height * 720 / poster.width)), Image.LANCZOS)
+        poster.save(OUT / f"film-{name}.webp", "WEBP", quality=84, method=6)
+        print(f"film {name}: h264 {h264.stat().st_size // 1024} KB, av1 {av1.stat().st_size // 1024} KB")
 
 
 if __name__ == "__main__":

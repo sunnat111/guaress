@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { asset } from "@/lib/asset";
+import { FilmSources } from "./FilmSources";
 
 /** Muted loop that only plays while at least 25% visible. topCrop hides a caption burned into the lower part. */
 export function InViewVideo({ name, className = "", topCrop = false }: { name: string; className?: string; topCrop?: boolean }) {
@@ -23,7 +24,6 @@ export function InViewVideo({ name, className = "", topCrop = false }: { name: s
     <video
       ref={ref}
       className={className}
-      src={asset(`/media/film-${name}.mp4`)}
       poster={asset(`/media/film-${name}.webp`)}
       muted
       loop
@@ -31,6 +31,8 @@ export function InViewVideo({ name, className = "", topCrop = false }: { name: s
       preload="none"
       aria-hidden="true"
       style={topCrop ? { height: "150%", objectPosition: "50% 0%" } : undefined}
-    />
+    >
+      <FilmSources name={name} />
+    </video>
   );
 }

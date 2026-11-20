@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { asset } from "@/lib/asset";
+import { FilmSources } from "./FilmSources";
 
 /**
  * Full-bleed background film. Phones get the vertical film, wider screens a
@@ -27,7 +28,6 @@ export function HeroVideo() {
       {wide !== null && (
         <video
           key={name}
-          src={asset(`/media/film-${name}.mp4`)}
           poster={asset(`/media/film-${name}.webp`)}
           autoPlay
           muted
@@ -35,7 +35,9 @@ export function HeroVideo() {
           playsInline
           preload="auto"
           className="absolute inset-0 h-full w-full object-cover"
-        />
+        >
+          <FilmSources name={name} />
+        </video>
       )}
     </div>
   );
