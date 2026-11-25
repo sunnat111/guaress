@@ -159,11 +159,6 @@ const uz = {
       "Guaress — zamonaviy erkak uchun premium garderob. Sokin ranglar, puxta bichim va kun bo‘yi saqlanadigan qulaylik.",
     heroCta: "Kolleksiya",
     heroLooks: "Obrazlarni ko‘rish",
-    stats: [
-      ["9", "tayyor obraz"],
-      ["3", "butik Toshkentda"],
-      ["10–22", "har kuni"],
-    ],
     nowWearing: "Hozir ekranda",
     book: "Butikka yozilish",
     statement: "Guaress — bu shunchaki kiyim emas, bu *o‘ziga ishongan* erkakning uslubi.",

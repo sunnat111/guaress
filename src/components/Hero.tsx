@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getLook, lookTotal } from "@/data/looks";
+import { getLook } from "@/data/looks";
 import type { Locale } from "@/i18n/config";
 import { getDict } from "@/i18n";
-import { formatPrice, photo } from "@/lib/asset";
+import { photo } from "@/lib/asset";
 import { HeroVideo } from "./HeroVideo";
 import { Rich } from "./Rich";
 
@@ -10,7 +10,6 @@ import { Rich } from "./Rich";
 export function Hero({ lang }: { lang: Locale }) {
   const t = getDict(lang);
   const look = getLook("09")!;
-  const { total } = lookTotal(look);
   const thumb = photo(look.photos[0]);
 
   return (
@@ -65,9 +64,6 @@ export function Hero({ lang }: { lang: Locale }) {
               <span className="serif mt-1 block text-[21px] leading-tight">
                 {look.num} · {look.title[lang]}
               </span>
-              <span className="mt-1 block text-[12px] text-white/70">
-                {formatPrice(total)}+ {t.currency}
-              </span>
             </span>
             <span className="link-arrow ml-2 text-white">
               <span className="arrow-line" />
@@ -75,14 +71,6 @@ export function Hero({ lang }: { lang: Locale }) {
           </Link>
         </div>
 
-        <dl className="fade-up mt-10 grid grid-cols-3 border-t border-white/20 pt-5 md:mt-12 md:max-w-[560px] [@media(max-height:760px)]:mt-7" style={{ animationDelay: ".75s" }}>
-          {t.lux.stats.map(([n, label], i) => (
-            <div key={i} className={i > 0 ? "border-l border-white/20 pl-5" : ""}>
-              <dt className="serif text-[28px] font-light leading-none md:text-[34px]">{n}</dt>
-              <dd className="mt-1.5 text-[11.5px] font-medium text-white/65">{label}</dd>
-            </div>
-          ))}
-        </dl>
       </div>
     </section>
   );
