@@ -17,14 +17,15 @@ export function switchLangPath(pathname: string, to: string): string {
 export function Header() {
   const { lang, t, open, openReserve, favorites } = useSite();
   const pathname = usePathname();
-  const isHome = pathname === `/${lang}/` || pathname === `/${lang}`;
+  // pages that open with a full-screen film (<section data-hero>): the header sits transparent on top
+  const heroPage = [`/${lang}/`, `/${lang}`, `/${lang}/dokonlar/`, `/${lang}/dokonlar`].includes(pathname);
   const [scrolled, setScrolled] = useState(false);
-  const [overHero, setOverHero] = useState(isHome);
+  const [overHero, setOverHero] = useState(heroPage);
 
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 8);
-      const hero = isHome ? document.querySelector<HTMLElement>("[data-hero]") : null;
+      const hero = heroPage ? document.querySelector<HTMLElement>("[data-hero]") : null;
       setOverHero(!!hero && window.scrollY < hero.offsetHeight - 90);
     };
     onScroll();
@@ -34,7 +35,7 @@ export function Header() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [isHome]);
+  }, [heroPage]);
   const light = overHero;
 
   const nav = [

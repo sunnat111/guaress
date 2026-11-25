@@ -89,8 +89,13 @@ FILMS: dict[str, Film] = {
     "park-wide": dict(src="park-IMG_6893.mp4", start=0.0, end=28.4, poster=2.6,
                       filters="crop=1072:840:0:460,cas=0.3", h264_crf=21, av1_crf=26,
                       h264_max="1600k", av1_max=1000),
+    # store film: delogo removes the small "GUARESS" watermark burned into the top-left corner
     "store": dict(src="store-guaress.mp4", start=0.0, end=22.7, poster=0.4,
-                  filters="scale=720:-2:flags=lanczos,cas=0.15", h264_crf=25, av1_crf=33),
+                  filters="delogo=x=45:y=85:w=225:h=165,cas=0.2", h264_crf=23, av1_crf=31,
+                  h264_max="1600k", av1_max=1100),
+    "store-wide": dict(src="store-guaress.mp4", start=0.0, end=22.7, poster=0.4,
+                       filters="delogo=x=45:y=85:w=225:h=165,crop=1072:840:0:120,cas=0.3", h264_crf=21, av1_crf=26,
+                       h264_max="1600k", av1_max=1000),
     "outerwear": dict(src="outerwear-IMG_7101.mp4", start=0.0, end=10.3, poster=0.3,
                       filters="scale=720:-2:flags=lanczos,cas=0.15", h264_crf=25, av1_crf=33),
 }
@@ -127,10 +132,11 @@ def save_pair(im: Image.Image, name: str) -> None:
     im.resize(SMALL, Image.LANCZOS).save(P_OUT / f"{name}-480.webp", "WEBP", quality=80, method=6)
 
 
-def grab_frame(video: Path, t: float) -> Image.Image:
+def grab_frame(video: Path, t: float, vf: str | None = None) -> Image.Image:
     with tempfile.NamedTemporaryFile(suffix=".png") as tmp:
         subprocess.run(
-            ["ffmpeg", "-v", "error", "-y", "-ss", str(t), "-i", str(video), "-frames:v", "1", tmp.name],
+            ["ffmpeg", "-v", "error", "-y", "-ss", str(t), "-i", str(video),
+             *(["-vf", vf] if vf else []), "-frames:v", "1", tmp.name],
             check=True,
         )
         return Image.open(tmp.name).copy()
@@ -179,13 +185,7 @@ def main() -> None:
             check=True,
             stderr=subprocess.DEVNULL,
         )
-        poster = grab_frame(video_dir / f["src"], f["poster"]).convert("RGB")
-        for flt in f["filters"].split(","):
-            if flt.startswith("crop="):
-                w, h, x, y = (int(v) for v in flt.split("=")[1].split(":"))
-                poster = poster.crop((x, y, x + w, y + h))
-            elif flt.startswith("scale=720"):
-                poster = poster.resize((720, round(poster.height * 720 / poster.width)), Image.LANCZOS)
+        poster = grab_frame(video_dir / f["src"], f["poster"], f["filters"]).convert("RGB")
         poster.save(OUT / f"film-{name}.webp", "WEBP", quality=84, method=6)
         print(f"film {name}: h264 {h264.stat().st_size // 1024} KB, av1 {av1.stat().st_size // 1024} KB")
 
